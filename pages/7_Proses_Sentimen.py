@@ -151,9 +151,14 @@ if st.button("Proses Sentimen"):
         st.warning("Belum ada komentar")
 
     else:
-        teks = df["isi_komentar"].apply(clean_text)
+        # teks asli (tidak diubah)
+        teks_asli = df["isi_komentar"]
 
-        X = vectorizer.transform(teks)
+        # teks untuk model (sudah dibersihkan)
+        teks_model = teks_asli.apply(clean_text)
+
+        # proses ke TF-IDF
+        X = vectorizer.transform(teks_model)
         prediksi = model.predict(X)
         confidence = model.decision_function(X)
 
