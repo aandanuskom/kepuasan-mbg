@@ -27,10 +27,11 @@ if not st.session_state.get("login"):
 # =====================
 def koneksi():
     return mysql.connector.connect(
-        host="localhost",
+        host="metro.proxy.rlwy.net",
         user="root",
-        password="",
-        database="db_kepuasan"
+        password="iXENEWaVoTYsIMxgHKUwIyTHvoDzyXtI",
+        database="railway",
+        port=46288
     )
 
 db = koneksi()
