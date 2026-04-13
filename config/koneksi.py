@@ -9,32 +9,85 @@ def koneksi():
         port=46288
     )
 
-
 def init_database():
-    db = koneksi()
-    cursor = db.cursor()
+    conn = koneksi()
+    cursor = conn.cursor()
 
-    try:
-        cursor.execute("SHOW TABLES")
-        tables = cursor.fetchall()
+    # =====================
+    # TABEL ADMIN
+    # =====================
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS admin (
+        id_admin INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50),
+        password VARCHAR(255)
+    )
+    """)
 
-        if tables:
-            print("✅ Database sudah ada")
-            return
+    # =====================
+    # TABEL RESPONDEN
+    # =====================
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS responden (
+        id_responden INT AUTO_INCREMENT PRIMARY KEY,
+        nama VARCHAR(100),
+        kelas VARCHAR(20),
+        jenis_kelamin VARCHAR(20),
+        tanggal DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
 
-        with open("db_kepuasan.sql", "r", encoding="utf-8") as file:
-            sql_script = file.read()
+    # =====================
+    # TABEL KOMENTAR
+    # =====================
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS komentar (
+        id_komentar INT AUTO_INCREMENT PRIMARY KEY,
+        id_responden INT,
+        isi_komentar TEXT,
+        tanggal DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
 
-        for statement in sql_script.split(";"):
-            if statement.strip():
-                cursor.execute(statement)
+    # =====================
+    # TABEL HASIL SENTIMEN
+    # =====================
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS hasil_sentimen (
+        id_hasil INT AUTO_INCREMENT PRIMARY KEY,
+        id_komentar INT UNIQUE,
+        hasil VARCHAR(20),
+        confidence FLOAT
+    )
+    """)
 
-        db.commit()
-        print("✅ Database berhasil diimport")
+    # =====================
+    # TABEL LOG TRAINING
+    # =====================
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS log_training (
+        id_log INT AUTO_INCREMENT PRIMARY KEY,
+        jumlah_data INT,
+        akurasi DECIMAL(5,2),
+        precision_score DECIMAL(5,2),
+        recall_score DECIMAL(5,2),
+        tanggal DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
 
-    except Exception as e:
-        print("❌ Error:", e)
+    # =====================
+    # INSERT ADMIN DEFAULT
+    # =====================
+    cursor.execute("SELECT * FROM admin LIMIT 1")
+    if cursor.fetchone() is None:
+        import hashlib
+        password = hashlib.sha256("admin123".encode()).hexdigest()
 
-    finally:
-        cursor.close()
-        db.close()
+        cursor.execute("""
+        INSERT INTO admin (username, password)
+        VALUES (%s, %s)
+        """, ("admin", password))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
