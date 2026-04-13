@@ -1,10 +1,10 @@
 import mysql.connector
 
 def koneksi():
-    db = mysql.connector.connect(
-        host="localhost",
+    return mysql.connector.connect(
+        host="metro.proxy.rlwy.net",
         user="root",
-        password="",
-        database="db_kepuasan"
+        password="iXENEWaVoTYsIMxgHKUwIyTHvoDzyXtI",
+        database="railway",
+        port=46288
     )
-    return db
