@@ -1,6 +1,10 @@
 import streamlit as st
 from config.koneksi import koneksi
 
+from config.koneksi import init_database
+
+init_database()
+
 # =====================
 # CONFIG
 # =====================
