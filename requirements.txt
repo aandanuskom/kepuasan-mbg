@@ -1,8 +1,8 @@
 streamlit
 pandas
-numpy
-scikit-learn
 mysql-connector-python
-joblib
+scikit-learn
 matplotlib
+joblib
+reportlab
 openpyxl
