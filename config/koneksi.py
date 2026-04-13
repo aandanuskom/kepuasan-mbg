@@ -1,4 +1,5 @@
 import mysql.connector
+import hashlib
 
 def koneksi():
     return mysql.connector.connect(
@@ -10,36 +11,54 @@ def koneksi():
     )
 
 def init_database():
-    conn = koneksi()
-    cursor = conn.cursor()
+    db = koneksi()
+    cursor = db.cursor()
 
-    # =====================
-    # TABEL ADMIN
-    # =====================
+    # ===================== ADMIN
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS admin (
         id_admin INT AUTO_INCREMENT PRIMARY KEY,
+        nama VARCHAR(100),
         username VARCHAR(50),
-        password VARCHAR(255)
+        password VARCHAR(255),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
-    # =====================
-    # TABEL RESPONDEN
-    # =====================
+    # ===================== DATASET TRAINING
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS dataset_training (
+        id_training INT AUTO_INCREMENT PRIMARY KEY,
+        komentar TEXT,
+        label ENUM('PUAS','NETRAL','TIDAK PUAS'),
+        sumber VARCHAR(100),
+        tanggal_upload DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # ===================== DATASET TESTING
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS dataset_testing (
+        id_testing INT AUTO_INCREMENT PRIMARY KEY,
+        komentar TEXT,
+        label VARCHAR(20),
+        tanggal_upload DATETIME DEFAULT CURRENT_TIMESTAMP,
+        tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # ===================== RESPONDEN
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS responden (
         id_responden INT AUTO_INCREMENT PRIMARY KEY,
         nama VARCHAR(100),
-        kelas VARCHAR(20),
-        jenis_kelamin VARCHAR(20),
+        sekolah VARCHAR(100),
+        kelas VARCHAR(50),
         tanggal DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
-    # =====================
-    # TABEL KOMENTAR
-    # =====================
+    # ===================== KOMENTAR
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS komentar (
         id_komentar INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,21 +68,29 @@ def init_database():
     )
     """)
 
-    # =====================
-    # TABEL HASIL SENTIMEN
-    # =====================
+    # ===================== HASIL SENTIMEN
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS hasil_sentimen (
         id_hasil INT AUTO_INCREMENT PRIMARY KEY,
-        id_komentar INT UNIQUE,
+        id_komentar INT,
         hasil VARCHAR(20),
-        confidence FLOAT
+        confidence FLOAT,
+        tanggal TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
 
-    # =====================
-    # TABEL LOG TRAINING
-    # =====================
+    # ===================== HASIL PREDIKSI
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS hasil_prediksi (
+        id_prediksi INT AUTO_INCREMENT PRIMARY KEY,
+        komentar TEXT,
+        hasil ENUM('PUAS','NETRAL','TIDAK PUAS'),
+        confidence DECIMAL(5,2),
+        tanggal DATETIME
+    )
+    """)
+
+    # ===================== LOG TRAINING
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS log_training (
         id_log INT AUTO_INCREMENT PRIMARY KEY,
@@ -75,19 +102,16 @@ def init_database():
     )
     """)
 
-    # =====================
-    # INSERT ADMIN DEFAULT
-    # =====================
+    # ===================== INSERT ADMIN SAJA
     cursor.execute("SELECT * FROM admin LIMIT 1")
     if cursor.fetchone() is None:
-        import hashlib
-        password = hashlib.sha256("admin123".encode()).hexdigest()
+        pwd = hashlib.sha256("admin".encode()).hexdigest()
 
         cursor.execute("""
-        INSERT INTO admin (username, password)
-        VALUES (%s, %s)
-        """, ("admin", password))
+        INSERT INTO admin (nama, username, password)
+        VALUES (%s, %s, %s)
+        """, ("Administrator", "admin", pwd))
 
-    conn.commit()
+    db.commit()
     cursor.close()
-    conn.close()
+    db.close()
