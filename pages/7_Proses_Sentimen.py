@@ -152,10 +152,10 @@ if st.button("Proses Sentimen"):
 
     else:
         # teks asli (tidak diubah)
-        teks_asli = df["isi_komentar"]
+        teks = df["isi_komentar"]
 
         # teks untuk model (sudah dibersihkan)
-        teks_model = teks_asli.apply(clean_text)
+        teks_model = teks.apply(clean_text)
 
         # proses ke TF-IDF
         X = vectorizer.transform(teks_model)
