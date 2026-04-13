@@ -5,6 +5,20 @@ import pickle
 import sys
 import os
 import joblib
+
+def clean_text(text):
+    text = text.lower()
+
+    # =====================
+    # HANDLE NEGASI (WAJIB)
+    # =====================
+    text = text.replace("kurang enak", "tidak_puas")
+    text = text.replace("tidak enak", "tidak_puas")
+    text = text.replace("ga enak", "tidak_puas")
+    text = text.replace("gak enak", "tidak_puas")
+
+    return text
+
 from io import BytesIO
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
@@ -137,13 +151,13 @@ if st.button("Proses Sentimen"):
         st.warning("Belum ada komentar")
 
     else:
-        teks = df["isi_komentar"]
+        teks = df["isi_komentar"].apply(clean_text)
 
         X = vectorizer.transform(teks)
         prediksi = model.predict(X)
         confidence = model.decision_function(X)
 
-        confidence_score = np.max(confidence, axis=1)
+        confidence_score = np.max(confidence, axis=1) if len(confidence.shape) > 1 else confidence
 
         # SIMPAN KE DATABASE
         for i in range(len(df)):
