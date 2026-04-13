@@ -102,8 +102,21 @@ FROM dataset_training
 # =====================
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r'[^a-zA-Z ]', '', text)
+
+    # =====================
+    # HANDLE NEGASI (WAJIB)
+    # =====================
+    text = text.replace("kurang enak", "tidak_puas")
+    text = text.replace("tidak enak", "tidak_puas")
+    text = text.replace("ga enak", "tidak_puas")
+    text = text.replace("gak enak", "tidak_puas")
+
+    # hapus karakter selain huruf & underscore
+    text = re.sub(r'[^a-zA-Z_ ]', '', text)
+
+    # rapikan spasi
     text = re.sub(r'\s+', ' ', text).strip()
+
     return text
 
 if len(df) == 0:
@@ -158,7 +171,7 @@ else:
     4. Menghasilkan fitur untuk model SVM
     """)
 
-    tfidf = TfidfVectorizer()
+    tfidf = TfidfVectorizer(ngram_range=(1,2))
 
     X_train_tfidf = tfidf.fit_transform(X_train)
     X_test_tfidf = tfidf.transform(X_test)
