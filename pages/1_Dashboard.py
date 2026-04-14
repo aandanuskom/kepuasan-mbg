@@ -27,11 +27,10 @@ if not st.session_state.get("login"):
 # =====================
 def koneksi():
     return mysql.connector.connect(
-        host="metro.proxy.rlwy.net",
+        host="localhost",
         user="root",
-        password="iXENEWaVoTYsIMxgHKUwIyTHvoDzyXtI",
-        database="railway",
-        port=46288
+        password="",
+        database="db_kepuasan"
     )
 
 db = koneksi()
@@ -204,7 +203,7 @@ with col3:
 with col4:
     st.markdown(f"""
     <div class="card">
-        <h3>{round(nilai_akurasi,2)}</h3>
+        <h3>{f"{round(nilai_akurasi * 100, 2)}%"}</h3>
         <p>Akurasi Model</p>
     </div>
     """, unsafe_allow_html=True)
