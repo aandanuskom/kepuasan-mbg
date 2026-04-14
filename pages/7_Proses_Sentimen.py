@@ -10,12 +10,30 @@ def clean_text(text):
     text = text.lower()
 
     # =====================
-    # HANDLE NEGASI (WAJIB)
+    # NORMALISASI NEGASI
     # =====================
-    text = text.replace("kurang enak", "tidak_puas")
-    text = text.replace("tidak enak", "tidak_puas")
-    text = text.replace("ga enak", "tidak_puas")
-    text = text.replace("gak enak", "tidak_puas")
+    text = text.replace("tidak ", "tidak_")
+    text = text.replace("kurang ", "kurang_")
+    text = text.replace("gak ", "tidak_")
+    text = text.replace("ga ", "tidak_")
+
+    # =====================
+    # NORMALISASI SENTIMEN NEGATIF
+    # =====================
+    text = text.replace("tidak_enak", "tidak_puas")
+    text = text.replace("kurang_enak", "tidak_puas")
+    text = text.replace("tidak_baik", "tidak_puas")
+    text = text.replace("kurang_baik", "tidak_puas")
+    text = text.replace("tidak_responsif", "tidak_puas")
+    text = text.replace("kurang_responsif", "tidak_puas")
+    text = text.replace("lambat", "tidak_puas")
+    text = text.replace("buruk", "tidak_puas")
+
+    # =====================
+    # NORMALISASI POSITIF
+    # =====================
+    text = text.replace("sangat puas", "puas")
+    text = text.replace("memuaskan", "puas")
 
     return text
 
@@ -73,7 +91,7 @@ if st.sidebar.button("⚙ Proses SVM Komentar"):
     st.switch_page("pages/7_Proses_Sentimen.py")
 
 if st.sidebar.button("📑 Laporan"):
-    st.switch_page("pages/78_Laporan.py")
+    st.switch_page("pages/8_Laporan.py")
 
 if st.sidebar.button("👤 Manajemen Admin"):
     st.switch_page("pages/9_Manajemen_Admin.py")
@@ -160,9 +178,24 @@ if st.button("Proses Sentimen"):
         # proses ke TF-IDF
         X = vectorizer.transform(teks_model)
         prediksi = model.predict(X)
+
+        # =====================
+        # RULE TAMBAHAN (ANTI SALAH)
+        # =====================
+        for i in range(len(teks)):
+            kalimat = teks.iloc[i].lower()
+
+            if any(k in kalimat for k in [
+                "tidak", "kurang", "buruk", "lambat", "kecewa"
+            ]):
+                prediksi[i] = "TIDAK PUAS"
+
         confidence = model.decision_function(X)
 
-        confidence_score = np.max(confidence, axis=1) if len(confidence.shape) > 1 else confidence
+        if len(confidence.shape) > 1:
+            confidence_score = np.max(confidence, axis=1)
+        else:
+            confidence_score = confidence
 
         # SIMPAN KE DATABASE
         for i in range(len(df)):
