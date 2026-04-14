@@ -83,13 +83,18 @@ st.caption("Hasil analisis sentimen responden menggunakan SVM")
 # =====================
 df = pd.read_sql("""
 SELECT 
+    r.nama,
+    r.sekolah,
+    r.kelas,
     k.isi_komentar AS komentar,
     h.hasil,
     h.confidence,
     k.tanggal
 FROM hasil_sentimen h
 JOIN komentar k 
-ON h.id_komentar = k.id_komentar
+    ON h.id_komentar = k.id_komentar
+JOIN responden r
+    ON k.id_responden = r.id_responden
 ORDER BY h.id_komentar ASC
 """, db)
 
@@ -196,13 +201,20 @@ st.dataframe(df_filtered, use_container_width=True, hide_index=True)
 # =====================
 # EXPORT
 # =====================
+import io
+
 st.subheader("⬇ Export Data")
 
-csv = df_filtered.to_csv(index=False).encode("utf-8")
+output = io.BytesIO()
+
+with pd.ExcelWriter(output, engine='openpyxl') as writer:
+    df_filtered.to_excel(writer, index=False, sheet_name='Laporan')
+
+processed_data = output.getvalue()
 
 st.download_button(
-    label="Download CSV (Filtered)",
-    data=csv,
-    file_name="laporan_kepuasan_filtered.csv",
-    mime="text/csv"
+    label="Download Excel (Filtered)",
+    data=processed_data,
+    file_name="laporan_kepuasan_filtered.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
