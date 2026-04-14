@@ -104,17 +104,27 @@ def clean_text(text):
     text = text.lower()
 
     # =====================
-    # HANDLE NEGASI (WAJIB)
+    # NORMALISASI NEGASI
     # =====================
-    text = text.replace("kurang enak", "tidak_puas")
-    text = text.replace("tidak enak", "tidak_puas")
-    text = text.replace("ga enak", "tidak_puas")
-    text = text.replace("gak enak", "tidak_puas")
+    text = text.replace("tidak ", "tidak_")
+    text = text.replace("kurang ", "kurang_")
+    text = text.replace("gak ", "tidak_")
+    text = text.replace("ga ", "tidak_")
 
-    # hapus karakter selain huruf & underscore
+    # =====================
+    # NORMALISASI KATA NEGATIF
+    # =====================
+    text = text.replace("tidak_baik", "tidak_puas")
+    text = text.replace("tidak_enak", "tidak_puas")
+    text = text.replace("tidak_responsif", "tidak_puas")
+    text = text.replace("kurang_baik", "tidak_puas")
+    text = text.replace("kurang_enak", "tidak_puas")
+    text = text.replace("kurang_responsif", "tidak_puas")
+
+    # =====================
+    # HAPUS KARAKTER
+    # =====================
     text = re.sub(r'[^a-zA-Z_ ]', '', text)
-
-    # rapikan spasi
     text = re.sub(r'\s+', ' ', text).strip()
 
     return text
@@ -171,7 +181,13 @@ else:
     4. Menghasilkan fitur untuk model SVM
     """)
 
-    tfidf = TfidfVectorizer(ngram_range=(1,2))
+    tfidf = TfidfVectorizer(
+        ngram_range=(1,2),
+        stop_words=[
+            "yang","dan","di","ke","dari","untuk","dengan","pada",
+            "ini","itu","saya","kami","anda"
+        ]
+    )
 
     X_train_tfidf = tfidf.fit_transform(X_train)
     X_test_tfidf = tfidf.transform(X_test)
@@ -189,7 +205,7 @@ else:
 
     if st.button("Mulai Training SVM"):
 
-        model = SVC(kernel="linear")
+        model = SVC(kernel="linear", C=2.0)
 
         model.fit(X_train_tfidf, y_train)
 
