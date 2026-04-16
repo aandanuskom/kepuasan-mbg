@@ -112,17 +112,25 @@ def clean_text(text):
     text = text.replace("ga ", "tidak_")
 
     # =====================
-    # NORMALISASI KATA NEGATIF
+    # NEGATIF
     # =====================
-    text = text.replace("tidak_baik", "tidak_puas")
     text = text.replace("tidak_enak", "tidak_puas")
-    text = text.replace("tidak_responsif", "tidak_puas")
-    text = text.replace("kurang_baik", "tidak_puas")
     text = text.replace("kurang_enak", "tidak_puas")
-    text = text.replace("kurang_responsif", "tidak_puas")
 
     # =====================
-    # HAPUS KARAKTER
+    # POSITIF (WAJIB SAMA DENGAN PROSES)
+    # =====================
+    text = text.replace("suka", "puas")
+    text = text.replace("bagus", "puas")
+    text = text.replace("enak", "puas")
+    text = text.replace("mantap", "puas")
+    text = text.replace("bermanfaat", "puas")
+    text = text.replace("membantu", "puas")
+    text = text.replace("bersyukur", "puas")
+    text = text.replace("memuaskan", "puas")
+
+    # =====================
+    # BERSIHKAN
     # =====================
     text = re.sub(r'[^a-zA-Z_ ]', '', text)
     text = re.sub(r'\s+', ' ', text).strip()
@@ -183,9 +191,12 @@ else:
 
     tfidf = TfidfVectorizer(
         ngram_range=(1,2),
+        min_df=2,
+        max_df=0.9,
         stop_words=[
             "yang","dan","di","ke","dari","untuk","dengan","pada",
-            "ini","itu","saya","kami","anda"
+            "ini","itu","saya","kami","anda","adalah","itu","ini",
+            "karena","jadi","agar","dengan","sebagai","oleh"
         ]
     )
 
